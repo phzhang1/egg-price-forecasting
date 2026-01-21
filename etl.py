@@ -27,7 +27,7 @@ DB_CONFIG = {
 }
 
 # Step 1: Extract
-def extract_egg_data(series_id: str, start_date: str = '2020-01-01') -> pd.DataFrame:
+def extract_fred_data(series_id: str, start_date: str = '2019-01-01') -> pd.DataFrame:
     """
     Extract time series data from FRED API.
 
@@ -72,12 +72,42 @@ def extract_egg_data(series_id: str, start_date: str = '2020-01-01') -> pd.DataF
         logger.error(f"Failed to extract FRED data for {series_id}: {e}")
         raise
 
+
+def extract_yahoo_data(ticker: str, start_date : str = '2019-01-01') -> pd.DataFrame:
+    """
+    Extract corn data from Yahoo Finance.
+
+    Args:
+        ticker: Stock ticker symbol
+        start_date: Start date
+    
+    Returns:
+        DataFrame with date and close price
+    """
+
+    logger.info(f"Extracting Yahoo Finance data: {ticker}")
+    try:
+        stock = yf.Ticker(ticker)
+        df = stock.history(start=start_date) # handles all the HTTP request and cleaning
+
+        df = df.reset_index() # reset index to shift date to column not index
+        df = df[['Date', 'Close']].rename(columns={'Date': 'date', 'Close' : ticker}) # use date for matching FRED and ticker as code readaiblity
+        df['date'] = pd.to_datetime(df['date'])
+
+        logger.info(f"Sucessfully extracted {len(df)} records for {ticker}")
+
+        return df
+    
+    except Exception as e:
+        logger.error(f"Failed to extract Yahoo data for {ticker}: {e}")
+        raise
+
 # Testing Function
 if __name__ == "__main__":
-    df = extract_egg_data("APU0000708111") # Eggs Consumer Price Index (CPI) for U.S. city average
-    print(df.head())
-    print(f"Shape: {df.shape}")
-
+    fred_df = extract_fred_data("APU0000708111") # Eggs Consumer Price Index (CPI) for U.S. city average
+    yahoo_df = extract_yahoo_data("ZC=F") # corn code
+    print(f"{fred_df.head()}\n Shape: {fred_df.shape}")
+    print(f"{yahoo_df.head()}\n Shape: {yahoo_df.shape}")
 
 # Step 2: Transform
 # - aggregate the data into universal monthly 
