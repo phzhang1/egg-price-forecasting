@@ -73,12 +73,37 @@ def extract_fred_data(series_id: str, value_col : str, start_date: str = '2019-0
         logger.error(f"Failed to extract FRED data for {series_id}: {e}")
         raise
 
+def extract_usda_data(filepath: str) -> pd.DataFrame:
+    """
+    Extract data from USDA CSV file (baseline and streamline data efficiently)
+
+    Args:
+        filepath: Path to USDA CSV file
+    
+    Returns:
+        Dataframe with columns
+    """
+    logger.info(f"Extracting USDA data from: {filepath}")
+
+    try:
+        df = pd.read_csv(filepath)
+        df = df.reset_index() # change confirmed date as its own column 
+        
+        logger.info(f"Successfully extracted {len(df)} records from USDA")
+        return df
+    
+    except Exception as e:
+        logger.error(f"Failed to extract USDA data: {e}")
+        raise
+
 # Testing Function
 if __name__ == "__main__":
     egg_df = extract_fred_data("APU0000708111", value_col='egg_price') # Eggs Consumer Price Index (CPI) for U.S. city average
     corn_df = extract_fred_data("PMAIZMTUSDM" ,value_col='corn_price') # Global Corn Price
+    flu_df = extract_usda_data('data/usda_flu.csv')
     print(f"{egg_df.head()}\n Shape: {egg_df.shape}")
     print(f"{corn_df.head()}\n Shape: {corn_df.shape}")
+    print(f"{flu_df.head()}\n Shape: {flu_df.shape}")
 
 # Step 2: Transform
 # - aggregate the data into universal monthly 
