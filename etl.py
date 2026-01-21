@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, text
 import logging
 import requests
 import os
+import time
 
 # Configure logging for ETL monitoring and debugging
 logging.basicConfig(
@@ -27,7 +28,7 @@ DB_CONFIG = {
 }
 
 # Step 1: Extract
-def extract_fred_data(series_id: str, start_date: str = '2019-01-01') -> pd.DataFrame:
+def extract_fred_data(series_id: str, value_col : str, start_date: str = '2019-01-01') -> pd.DataFrame:
     """
     Extract time series data from FRED API.
 
@@ -63,7 +64,7 @@ def extract_fred_data(series_id: str, start_date: str = '2019-01-01') -> pd.Data
         df = pd.DataFrame(data['observations'])
         df['date'] = pd.to_datetime(df['date'])
         df['value'] = pd.to_numeric(df['value'], errors='coerce') # handles '.' to NaN values and turning strings to int
-
+        df = df.rename(columns={'value' : value_col})
         logger.info(f"Successfully extracted {len(df)} records for {series_id}")
 
         return df
@@ -72,42 +73,12 @@ def extract_fred_data(series_id: str, start_date: str = '2019-01-01') -> pd.Data
         logger.error(f"Failed to extract FRED data for {series_id}: {e}")
         raise
 
-
-def extract_yahoo_data(ticker: str, start_date : str = '2019-01-01') -> pd.DataFrame:
-    """
-    Extract corn data from Yahoo Finance.
-
-    Args:
-        ticker: Stock ticker symbol
-        start_date: Start date
-    
-    Returns:
-        DataFrame with date and close price
-    """
-
-    logger.info(f"Extracting Yahoo Finance data: {ticker}")
-    try:
-        stock = yf.Ticker(ticker)
-        df = stock.history(start=start_date) # handles all the HTTP request and cleaning
-
-        df = df.reset_index() # reset index to shift date to column not index
-        df = df[['Date', 'Close']].rename(columns={'Date': 'date', 'Close' : ticker}) # use date for matching FRED and ticker as code readaiblity
-        df['date'] = pd.to_datetime(df['date'])
-
-        logger.info(f"Sucessfully extracted {len(df)} records for {ticker}")
-
-        return df
-    
-    except Exception as e:
-        logger.error(f"Failed to extract Yahoo data for {ticker}: {e}")
-        raise
-
 # Testing Function
 if __name__ == "__main__":
-    fred_df = extract_fred_data("APU0000708111") # Eggs Consumer Price Index (CPI) for U.S. city average
-    yahoo_df = extract_yahoo_data("ZC=F") # corn code
-    print(f"{fred_df.head()}\n Shape: {fred_df.shape}")
-    print(f"{yahoo_df.head()}\n Shape: {yahoo_df.shape}")
+    egg_df = extract_fred_data("APU0000708111", value_col='egg_price') # Eggs Consumer Price Index (CPI) for U.S. city average
+    corn_df = extract_fred_data("PMAIZMTUSDM" ,value_col='corn_price') # Global Corn Price
+    print(f"{egg_df.head()}\n Shape: {egg_df.shape}")
+    print(f"{corn_df.head()}\n Shape: {corn_df.shape}")
 
 # Step 2: Transform
 # - aggregate the data into universal monthly 
