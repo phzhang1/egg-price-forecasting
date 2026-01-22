@@ -204,12 +204,19 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
 
         # Use date as index for resampling
         df_monthly = df.set_index('date')
-        df_monthly = df_monthly.resample('MS').mean() # standardize to first day of month and use average
+        
+        if source_name == 'avian_flu':
+            df_monthly = df_monthly.resample('MS').size().to_frame(name='flu_outbreak_count')
+        else:
+            df_monthly = df_monthly.resample('MS').mean(numeric_only=True)
+
         monthly_dfs.append(df_monthly)
 
     merged = pd.concat(monthly_dfs, axis=1, join='outer') # outer join to keep all months along columns
 
     # Handling Nulls
+
+    print(f"NaNs before filling: {merged.isna().sum()}") # checking for use case of filling
 
     # Forward Fill: carry last known value forward (bulk of filling)
     merged = merged.fillna(method='ffill', limit=3) # limit to 3 months max
@@ -227,20 +234,23 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
 
     return merged
 
-# # Testing Function
-# if __name__ == "__main__":
-#     egg_df = extract_fred_data("APU0000708111", value_col='egg_price') # Eggs Consumer Price Index (CPI) for U.S. city average
-#     corn_df = extract_fred_data("PMAIZMTUSDM" ,value_col='corn_price') # Global Corn Price
-#     flu_df = extract_flu_data('data/usda_flu.csv')
-#     print(f"{egg_df.head()}\n Shape: {egg_df.shape}")
-#     print(f"{corn_df.head()}\n Shape: {corn_df.shape}")
-#     print(f"{flu_df.head()}\n Shape: {flu_df.shape}")
-flu_df = extract_flu_data('data/usda_flu.csv')
-dataframes = {
-    'avian_flu' : flu_df
-}
-test_df = transform_to_monthly(dataframes)
-print(test_df.isnull().sum())
+# Testing Function
+if __name__ == "__main__":
+    egg_df = extract_fred_data("APU0000708111", value_col='egg_price') # Eggs Consumer Price Index (CPI) for U.S. city average
+    corn_df = extract_fred_data("PMAIZMTUSDM" ,value_col='corn_price') # Global Corn Price
+    flu_df = extract_flu_data('data/usda_flu.csv')
+    # print(f"{egg_df.head()}\n Shape: {egg_df.shape}")
+    # print(f"{corn_df.head()}\n Shape: {corn_df.shape}")
+    # print(f"{flu_df.head()}\n Shape: {flu_df.shape}")
+    dataframes = {
+    'avian_flu' : flu_df,
+    'egg_prices' : egg_df,
+    'corn_prices' : corn_df
+    }
+    test_df = transform_to_monthly(dataframes)
+    print(test_df.head())
+    print((test_df['flu_outbreak_count'] == 0).sum())
+    print((test_df.describe()))
 
 # - merge based on data
 # - handle null with zero filling strategy
