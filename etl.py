@@ -75,7 +75,7 @@ def extract_fred_data(series_id: str, value_col : str, start_date: str = '2019-0
 
 def extract_flu_data(filepath: str) -> pd.DataFrame:
     """
-    Extract USDA avian flu outbreak data.
+    Extract USDA avian flu outbreak data and birds affected values.
     - Row 0 contains the dates in each "Control Area Released.X" column
     - Each subsequent row has exactly one non-null value
     - The column where that value appears tells us the release date
@@ -111,8 +111,9 @@ def extract_flu_data(filepath: str) -> pd.DataFrame:
         # Get all the "Control Area Released" columns (columns 5 onwards)
         date_cols = data.iloc[:, 5:]
         
-        # Extract the release date for each row
+        # Extract the release date and birds affected for each row
         release_dates = []
+        flu_birds_affected = []
         
         # Each row contains the [Nan, NaN, ... "Value", NaN, ... ] (575+ values)
         for idx, row in date_cols.iterrows():
@@ -126,12 +127,17 @@ def extract_flu_data(filepath: str) -> pd.DataFrame:
                 # Look up what date is in that column (from row 0)
                 release_date = header_row[col_name]
                 release_dates.append(release_date)
+                
+                birds_count = non_null.iloc[0]
+                flu_birds_affected.append(birds_count)
             else:
                 # Safety measure for any row with no values in all columns
                 release_dates.append(None)
+                flu_birds_affected.append(0)
         
-        # Add release dates to metadata
+        # Add release dates and birds affected to metadata
         metadata['release_date_raw'] = release_dates
+        metadata['flu_birds_affected'] = flu_birds_affected
         
         # Parse confirmation date
         metadata['date'] = pd.to_datetime(
@@ -140,6 +146,9 @@ def extract_flu_data(filepath: str) -> pd.DataFrame:
             errors='coerce'
         )
         
+        # Handles non numeric values
+        metadata['flu_birds_affected'] = pd.to_numeric(metadata['flu_birds_affected'], errors='coerce')
+
         # Parse release date, replace active and N/A outbreaks with NaN values
         metadata['release_date'] = pd.to_datetime(
             metadata['release_date_raw'].replace(['Active', 'nan'], None),
@@ -158,6 +167,7 @@ def extract_flu_data(filepath: str) -> pd.DataFrame:
             'state', 
             'county', 
             'production_type', 
+            'flu_birds_affected',
             'release_date',
             'days_to_release'
         ]].copy()
@@ -206,7 +216,12 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
         df_monthly = df.set_index('date')
         
         if source_name == 'avian_flu':
-            df_monthly = df_monthly.resample('MS').size().to_frame(name='flu_outbreak_count')
+
+            # Aggregate both outbreak and total birds affected
+            outbreak_count = df.set_index('date').resample('MS').size().to_frame(name='flu_outbreak_count')
+            birds_sum = df.set_index('date').resample('MS')['flu_birds_affected'].sum().to_frame(name='flu_birds_affected')
+            df_monthly = pd.concat([outbreak_count, birds_sum], axis=1)
+
         else:
             df_monthly = df_monthly.resample('MS').mean(numeric_only=True)
 
@@ -225,7 +240,13 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     merged = merged.fillna(method='bfill', limit=1)
 
     # Zerofill: any values not filled are more testable as actual 0 values
-    merged = merged.fillna(0) 
+    # Specifically zero fill flu data to override forward or backward filling (sensitive data)
+    if 'flu_outbreak_count' in merged.columns:
+        merged['flu_outbreak_count'] = merged['flu_outbreak_count'].fillna(0)
+    if 'flu_birds_affected' in merged.columns:
+        merged['flu_birds_affected'] = merged['flu_birds_affected'].fillna(0)
+
+    merged = merged.fillna(0) # Handles the rest
 
     merged = merged.reset_index()
     merged = merged.rename(columns={'index' : 'date'})
@@ -251,10 +272,6 @@ if __name__ == "__main__":
     print(test_df.head())
     print((test_df['flu_outbreak_count'] == 0).sum())
     print((test_df.describe()))
-
-# - merge based on data
-# - handle null with zero filling strategy
-# - return a single dataframe for the database
 
 # Step 3: Load
 # - loading the data into postgresql
