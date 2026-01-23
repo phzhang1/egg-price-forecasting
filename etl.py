@@ -114,7 +114,7 @@ def extract_flu_data(filepath: str) -> pd.DataFrame:
         # Extract the release date and birds affected for each row
         release_dates = []
         flu_birds_affected = []
-        
+
         # Each row contains the [Nan, NaN, ... "Value", NaN, ... ] (575+ values)
         for idx, row in date_cols.iterrows():
             # Grab only the value row that is not null
@@ -260,9 +260,6 @@ if __name__ == "__main__":
     egg_df = extract_fred_data("APU0000708111", value_col='egg_price') # Eggs Consumer Price Index (CPI) for U.S. city average
     corn_df = extract_fred_data("PMAIZMTUSDM" ,value_col='corn_price') # Global Corn Price
     flu_df = extract_flu_data('data/usda_flu.csv')
-    # print(f"{egg_df.head()}\n Shape: {egg_df.shape}")
-    # print(f"{corn_df.head()}\n Shape: {corn_df.shape}")
-    # print(f"{flu_df.head()}\n Shape: {flu_df.shape}")
     dataframes = {
     'avian_flu' : flu_df,
     'egg_prices' : egg_df,
@@ -274,4 +271,42 @@ if __name__ == "__main__":
     print((test_df.describe()))
 
 # Step 3: Load
-# - loading the data into postgresql
+
+def load_to_postgres(df: pd.DataFrame, table_name: str = 'economic_data') -> None:
+    """
+    Load transformed data into PostgreSQL.
+    
+    Args:
+        df: Transformed DataFrame
+        table_name: Target table name
+    """
+    logger.info(f"Loading {len(df)} records to PostgreSQL table: {table_name}")
+    
+    # Create connection string to the database
+    conn_string = f"postgresql://{DB_CONFIG['user']}:
+    {DB_CONFIG['password']}@{DB_CONFIG['host']}:
+    {DB_CONFIG['port']}/{DB_CONFIG['database']}"
+    
+    try:
+        engine = create_engine(conn_string) # allows the data to flow through 
+        
+        # Conver pandas DataFrame into SQL table
+        df.to_sql(
+            table_name, 
+            engine, 
+            if_exists='replace',  # drops old table for new runs
+            index=False,
+            method='multi'  # optimization for faster ingestion 
+        )
+        
+        # Use indexes to optimize date lookup
+        with engine.connect() as conn: # open direct SQL connection 
+            conn.execute(text(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_date ON {table_name}(date);")) # building lookup table
+            conn.commit() # save the index
+        
+        logger.info(f"Successfully loaded data to {table_name}")
+        
+    except Exception as e:
+        logger.error(f"Failed to load data to PostgreSQL: {e}")
+        raise
+
