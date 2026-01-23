@@ -57,6 +57,26 @@ paying for storage they don't need, or selling too early and missing margin oppo
 
 ## Implementations
 
+- **ETL Pipeline:**
+    - **Extract:**
+        - **FRED API:** Egg CPI, corn futures
+        - **USDA HPAI:** Avian flu outbreaks, release dates, birds affected
+        - Robust parsing for messy USDA structure (500+ dynamic columns)
+
+    - **Transform:**
+        - Standarize all sources to monthly frequency
+        - Aggregate flu data into:
+            - `flu_outbreak_count` (monthly count)
+            - `flu_birds_affected` (monthly sum)
+        - Forward/backward fill for economic series
+        - Zero-fill for flu data to avoid false signals
+        - Outer-join to preserve all months
+        
+    - **Load:**
+        - Load final dataset into PostgreSQL via SQLAlchemy
+        - Dockerized Postgres environment
+        - Automatic table creation and date indexing ingestion
+
 - **Data Findings**
     - *To be completed after exploratory analysis. This section will summarize data quality, missingness, distribution patterns, and any unexpected insights discovered during ingestion.*
 

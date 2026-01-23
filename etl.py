@@ -234,10 +234,10 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     print(f"NaNs before filling: {merged.isna().sum()}") # checking for use case of filling
 
     # Forward Fill: carry last known value forward (bulk of filling)
-    merged = merged.fillna(method='ffill', limit=3) # limit to 3 months max
+    merged = merged.ffill(limit=3) # limit to 3 months max
 
     # Backward fill: any leading NaNs (any remaining cleanup)
-    merged = merged.fillna(method='bfill', limit=1)
+    merged = merged.bfill(limit=1)
 
     # Zerofill: any values not filled are more testable as actual 0 values
     # Specifically zero fill flu data to override forward or backward filling (sensitive data)
