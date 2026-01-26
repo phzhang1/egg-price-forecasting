@@ -1,15 +1,12 @@
-# Goal: extract the data from FRED/Yahoo/USDA, clean it, and load into Postgres
+# Goal: extract the data from FRED and USDA, clean it, and load into Postgres
 
 # Step 0 import necessary libraries (pandas, yfinance, sqlalchemy, etc) and define database connection
 import pandas as pd
-import numpy as np
-import yfinance as yf
 from sqlalchemy import create_engine, text
 import logging
 import requests
 import os
-import time
-from typing import Dict, Optional
+from typing import Dict
 
 # Configure logging for ETL monitoring and debugging
 logging.basicConfig(
@@ -233,20 +230,20 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
 
     print(f"NaNs before filling: {merged.isna().sum()}") # checking for use case of filling
 
-    # Forward Fill: carry last known value forward (bulk of filling)
+    # Zerofill: any values not filled are more testable as actual 0 values
+    # Specifically zero fill flu data to prevent creating fake outbreaks
+    flu_cols = ['flu_outbreak_count', 'flu_birds_affected']
+    for col in flu_cols:
+        if col in merged.columns:
+            merged[col] = merged[col].fillna(0)
+
+    # Forward Fill: carry last known value forward (bulk of filling) for prices
     merged = merged.ffill(limit=3) # limit to 3 months max
 
     # Backward fill: any leading NaNs (any remaining cleanup)
     merged = merged.bfill(limit=1)
 
-    # Zerofill: any values not filled are more testable as actual 0 values
-    # Specifically zero fill flu data to override forward or backward filling (sensitive data)
-    if 'flu_outbreak_count' in merged.columns:
-        merged['flu_outbreak_count'] = merged['flu_outbreak_count'].fillna(0)
-    if 'flu_birds_affected' in merged.columns:
-        merged['flu_birds_affected'] = merged['flu_birds_affected'].fillna(0)
-
-    merged = merged.fillna(0) # Handles the rest
+    merged = merged.fillna(0) # Final safety net
 
     merged = merged.reset_index()
     merged = merged.rename(columns={'index' : 'date'})
