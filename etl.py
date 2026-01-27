@@ -7,6 +7,7 @@ import logging
 import requests
 import os
 from typing import Dict
+from dotenv import load_dotenv
 
 # Configure logging for ETL monitoring and debugging
 logging.basicConfig(
@@ -39,6 +40,8 @@ def extract_fred_data(series_id: str, value_col : str, start_date: str = '2019-0
     Resuls:
         Dataframe with date and value columns
     """
+
+    load_dotenv()
 
     FRED_API_KEY = os.getenv('FRED_API_KEY')
 
@@ -249,6 +252,9 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     merged = merged.rename(columns={'index' : 'date'})
 
     logger.info(f"Transformation complete. Final dataset: {len(merged)} months")
+
+    merged['month'] = merged['date'].dt.month
+    merged['quarter'] = merged['date'].dt.quarter
 
     return merged
 

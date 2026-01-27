@@ -69,6 +69,7 @@ paying for storage they don't need, or selling too early and missing margin oppo
     - Forward/backward fill for economic series
     - Zero-fill for flu data to avoid false signals
     - Outer-join to preserve all months
+    - Add month and quarter columns to count for Seasonality
     
 - **Load:**
     - Load final dataset into PostgreSQL via SQLAlchemy
@@ -88,8 +89,21 @@ paying for storage they don't need, or selling too early and missing margin oppo
         - “Baking season” months do not reliably align with price peaks
         - **Finding:** Largest spikes often occur in **non‑seasonal months**, suggesting demand seasonality is not a dominant factor.
 
-- **Model Strategy:**
-    - *To be completed after baseline modeling. This section will outline preprocessing steps, lag engineering, time-series split, and model selection rationale.*
+- **Correlation Findings (Statistical Validation)**
+    - **Market Memory (Autocorrelation)**
+        - Egg price vs. 1-month lag shows a correlation of **0.96**.
+        - Indicates extremely high price persistence.
+        - **Modeling Implication:** Raw price forecasting risks becoming a "lazy model" that simply copies last month's value. Differencing the target (predicting change in price) will help the model learn real drivers.
+    - **Biological Supply Shocks vs. Economic Inputs**
+        - Birds affected show a strong correlation (**0.65**) with egg prices.
+        - Corn prices show a weaker relationship (**0.23**).
+        - **Modeling Implication:** Flu severity is the dominant predictive signal; feed costs are secondary.
+    - **Seasonality**
+        - Month are quarter correlations are week (0.11)
+        - **Modeling Implications:** Seasonality adds little predictive value and can be deprioritized or dropped.
+    - **Multicollinearity**
+        - Flu Outbreak and Flu Birds Affected are **highly correlated** which means that they encode the same underlying signal. 
+        - **Model Implications:** Remove `flu_outbreak_count` to avoid redundant features and reduce noise during training.
 
 - **Baseline vs Challenger Model:**
     - *To be completed after initial experiments. This section will compare the baseline linear model to a more non linear challenger model (e.g., Random Forest), including performance metrics and trade-offs.*
