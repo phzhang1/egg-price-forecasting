@@ -51,34 +51,42 @@ paying for storage they don't need, or selling too early and missing margin oppo
     - No imputation of unknown values - avoid injecting artifical signals
 
 ## Hypothesis Story
-- When avian flue cases spike, supply tightens and egg prices rise with a lag of ~2-4 weeks
-- When corn futures increases, producers face higher feed costs and prices rise to protect margins
-- Seasonal patterns (holidays, baking seasons) create predictable demand cycles
+**Hypothesis 1:** When avian flu birds spike, supply tightens and egg prices rise with a lag of ~2-4 weeks
+**Hypothesis 2:** When corn futures increases, producers face higher feed costs and prices rise to protect margins
+**Hypothesis 3:** Seasonal patterns (holidays, baking seasons) create predictable demand cycles
 
-## Implementations
+## ETL Pipeline:
+- **Extract:**
+    - **FRED API:** Egg CPI, corn futures
+    - **USDA HPAI:** Avian flu outbreaks, release dates, birds affected
+    - Robust parsing for messy USDA structure (500+ dynamic columns)
 
-- **ETL Pipeline:**
-    - **Extract:**
-        - **FRED API:** Egg CPI, corn futures
-        - **USDA HPAI:** Avian flu outbreaks, release dates, birds affected
-        - Robust parsing for messy USDA structure (500+ dynamic columns)
+- **Transform:**
+    - Standarize all sources to monthly frequency
+    - Aggregate flu data into:
+        - `flu_outbreak_count` (monthly mean)
+        - `flu_birds_affected` (monthly mean)
+    - Forward/backward fill for economic series
+    - Zero-fill for flu data to avoid false signals
+    - Outer-join to preserve all months
+    
+- **Load:**
+    - Load final dataset into PostgreSQL via SQLAlchemy
+    - Dockerized Postgres environment
+    - Automatic table creation and date indexing ingestion
 
-    - **Transform:**
-        - Standarize all sources to monthly frequency
-        - Aggregate flu data into:
-            - `flu_outbreak_count` (monthly count)
-            - `flu_birds_affected` (monthly sum)
-        - Forward/backward fill for economic series
-        - Zero-fill for flu data to avoid false signals
-        - Outer-join to preserve all months
-        
-    - **Load:**
-        - Load final dataset into PostgreSQL via SQLAlchemy
-        - Dockerized Postgres environment
-        - Automatic table creation and date indexing ingestion
+## Exploratory Data Analysis 
 
-- **Data Findings**
-    - *To be completed after exploratory analysis. This section will summarize data quality, missingness, distribution patterns, and any unexpected insights discovered during ingestion.*
+- **Hypothesis Findings**
+    - **Hypothesis 1 (Strong Support): Avian Flu Supply Shocks** 
+        - Outbreak spikes consistently precede egg price increases by **1–2 months**.
+        - Price impact scales with **birds affected**, confirming strong supply‑side sensitivity.
+    - **Hypothesis 2 (Partial Support): Feed Costs (Corn)**
+        - **2019-2023:** Corn and egg prices moved together, suggesting feed costs mattered in stable periods.
+        - **2024-Present Divergence:** Corn stabilized while egg prices surged, indicating **feed costs are no longer the main driver.** 
+    - **Hypothesis 3 (Weak Signal): Seasonal Demand**
+        - “Baking season” months do not reliably align with price peaks
+        - **Finding:** Largest spikes often occur in **non‑seasonal months**, suggesting demand seasonality is not a dominant factor.
 
 - **Model Strategy:**
     - *To be completed after baseline modeling. This section will outline preprocessing steps, lag engineering, time-series split, and model selection rationale.*
