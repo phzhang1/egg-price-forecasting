@@ -257,7 +257,7 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     
     # Create Market Memory (Lagged Price): "What was the price last month?"
     merged['egg_price_lag'] = merged['egg_price'].shift(1) # shifts the price down by 1 row 
-
+    merged['flu_lag'] = merged['flu_birds_affected'].shift(1) # creating flu lag
     logger.info(f"Transformation complete. Final dataset: {len(merged)} months")
 
     return merged
