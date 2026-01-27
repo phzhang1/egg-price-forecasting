@@ -89,22 +89,24 @@ paying for storage they don't need, or selling too early and missing margin oppo
         - “Baking season” months do not reliably align with price peaks
         - **Finding:** Largest spikes often occur in **non‑seasonal months**, suggesting demand seasonality is not a dominant factor.
 
-- **Correlation Findings (Statistical Validation)**
-    - **Market Memory (Autocorrelation)**
-        - Egg price vs. 1-month lag shows a correlation of **0.96**.
-        - Indicates extremely high price persistence.
-        - **Modeling Implication:** Raw price forecasting risks becoming a "lazy model" that simply copies last month's value. Differencing the target (predicting change in price) will help the model learn real drivers.
-    - **Biological Supply Shocks vs. Economic Inputs**
-        - Birds affected show a strong correlation (**0.65**) with egg prices.
-        - Introducing a 1-month flu lag strengthens the relationship further (**0.72**).
-        - Corn prices show a weaker relationship (**0.23**).
-        - **Modeling Implication:** Flu severity, especially with lag, is the dominant predictive signal; feed costs are secondary.
-    - **Seasonality**
-        - Month are quarter correlations are week (0.11)
-        - **Modeling Implications:** Seasonality adds little predictive value and can be deprioritized or dropped.
+- **Correlation Analysis (Revised After Differencing)**
+    - **Raw Price Correlations Were Misleading**
+        - Egg price and its 1-month lag showed an extremely high correlation (**0.96**).
+        - This created the illusion that most features were strongly predictive simply because prices trend smoothly over time.
+        - **Insight:** Raw-price correlations overstated relationships and masked true drivers of volatility.
+    - **Differenced Target Reveals True Predictive Signals**
+        - After switching to Δ price (month-over-month change):
+            - **Outbreak count (News)** became a **strong** predictor than **Birds Affected (Biomass)**.
+            - Corn price changes show only a weak relationship (~0.12).
+            - Month and Quarter remain low-value features.
     - **Multicollinearity**
-        - Flu Outbreak and Flu Birds Affected are **highly correlated** which means that they encode the same underlying signal. 
-        - **Model Implications:** Remove `flu_outbreak_count` to avoid redundant features and reduce noise during training.
+        - Flu outbreak count and birds affected are highly correlated.
+        - **Modeling Implication:** Remove `flu_birds_affected` to avoid redundant signals and focus on the stronger "Market Panic" signal from `flu_outbreak_count`.
+    - **Modeling Implications**
+        - **Stationary:** Differencing the target avoids a "lazy model" that achieves high accuracy by simply copying last month's price.
+        - **Drivers:** Lagged outbreak frequency becomes the primary external driver, while momentum (`price_diff_lag`) drives the baseline.
+        - Feed-cost signals are present but secondary to biological shocks.
+        - Seasonality shows little to no signal.
 
 - **Baseline vs Challenger Model:**
     - *To be completed after initial experiments. This section will compare the baseline linear model to a more non linear challenger model (e.g., Random Forest), including performance metrics and trade-offs.*
