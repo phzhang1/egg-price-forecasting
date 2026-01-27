@@ -108,8 +108,18 @@ paying for storage they don't need, or selling too early and missing margin oppo
         - Feed-cost signals are present but secondary to biological shocks.
         - Seasonality shows little to no signal.
 
-- **Baseline vs Challenger Model:**
-    - *To be completed after initial experiments. This section will compare the baseline linear model to a more non linear challenger model (e.g., Random Forest), including performance metrics and trade-offs.*
+## Model Implementation 
+
+- **Baseline vs Challenger Model**
+    - **The Baseline:** Linear Regression
+        - With only ~85 observations, a simple model reduces the risk of overfitting.
+        - Linear regression on lagged features provides a clean benchmark: *"Can the market be explained with straightforward linear relationships?*
+        - This baseline helps determine whether more complex models are truly necessary.
+    
+    - **The Challenger:** XGBoost (Gradient Boosting)
+        - Market reactions to shocks (e.g., avian flue headlines) are often **non-linear**. 
+        - XGBoost can capture threshold effects, interactions, and non-linear patterns that linear regression cannot.
+        - This model tests whether the market's behavior contains complexity beyond simple trends.
 
 ## Results and Outcomes
 
