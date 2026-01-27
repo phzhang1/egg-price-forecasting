@@ -96,8 +96,9 @@ paying for storage they don't need, or selling too early and missing margin oppo
         - **Modeling Implication:** Raw price forecasting risks becoming a "lazy model" that simply copies last month's value. Differencing the target (predicting change in price) will help the model learn real drivers.
     - **Biological Supply Shocks vs. Economic Inputs**
         - Birds affected show a strong correlation (**0.65**) with egg prices.
+        - Introducing a 1-month flu lag strengthens the relationship further (**0.72**).
         - Corn prices show a weaker relationship (**0.23**).
-        - **Modeling Implication:** Flu severity is the dominant predictive signal; feed costs are secondary.
+        - **Modeling Implication:** Flu severity, especially with lag, is the dominant predictive signal; feed costs are secondary.
     - **Seasonality**
         - Month are quarter correlations are week (0.11)
         - **Modeling Implications:** Seasonality adds little predictive value and can be deprioritized or dropped.
