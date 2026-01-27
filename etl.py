@@ -251,10 +251,14 @@ def transform_to_monthly(dataframes: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     merged = merged.reset_index()
     merged = merged.rename(columns={'index' : 'date'})
 
-    logger.info(f"Transformation complete. Final dataset: {len(merged)} months")
-
+    # Seasonality Features
     merged['month'] = merged['date'].dt.month
     merged['quarter'] = merged['date'].dt.quarter
+    
+    # Create Market Memory (Lagged Price): "What was the price last month?"
+    merged['egg_price_lag'] = merged['egg_price'].shift(1) # shifts the price down by 1 row 
+
+    logger.info(f"Transformation complete. Final dataset: {len(merged)} months")
 
     return merged
 
