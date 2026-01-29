@@ -77,6 +77,9 @@ paying for storage they don't need, or selling too early and missing margin oppo
     - Automatic table creation and date indexing ingestion
 
 ## Exploratory Data Analysis 
+[Click here to explore the interactive EDA Dashboard](https://public.tableau.com/views/EDAEggPriceForecasting/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+
+[![EDA Dashboard Preview](images/dashboard/eda.png)](https://public.tableau.com/views/EDAEggPriceForecasting/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
 
 - **Hypothesis Findings**
     - **Hypothesis 1 (Strong Support): Avian Flu Supply Shocks** 
@@ -110,6 +113,12 @@ paying for storage they don't need, or selling too early and missing margin oppo
 
 ## Model Implementation 
 
+- **Validation Strategy (Time-Series Split)**
+    - **No Random Shuffling:** To prevent data leakage (using future data to predict the past), the dataset was split chronologically.
+    - **Training Set:** 2019 – mid-2024 (80% of data).
+    - **Test Set:** mid-2024 – 2026 (20% of data).
+    - **Stationarity:** Target variable was transformed to **Price Change ($/month)** to remove trends and ensure statistical validity.
+
 - **Baseline vs Challenger Model**
     - **The Baseline:** Linear Regression
         - With only ~85 observations, a simple model reduces the risk of overfitting.
@@ -123,7 +132,30 @@ paying for storage they don't need, or selling too early and missing margin oppo
 
 ## Results and Outcomes
 
-- *To be completed after model evaluation. This section will report forecasting accuracy (e.g., RMSE), highlight how well the model captured price trends, and translate performance into business impact for the Inventory Strategist.* -
+[Click here to explore the interactive Forecast Dashboard](https://public.tableau.com/views/EggPriceDynamicsFromEDAtoForecasting/AnalysisDash?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+
+[![Forecast Dashboard Preview](images/dashboard/analysis.png)](https://public.tableau.com/views/EggPriceDynamicsFromEDAtoForecasting/AnalysisDash?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
+
+### 1. Performance Verdict: Simplicity Wins
+The Linear Regression baseline outperformed the complex XGBoost model, proving that in a small-data environment, robust linear trends outweigh complex non-linear patterns.
+
+| Model | MAE (USD) | Interpretation |
+|-------|-----------|----------------|
+| **Linear Regression** | **0.38** | On average, predictions miss by 38 cents. |
+| **XGBoost** | 0.43 | On average, predictions miss by 43 cents. |
+
+### 2. What Drives the Price? (Feature Importance)
+The two models revealed a split in market behavior:
+* **Momentum dominates (Linear Model):** The Linear model relied almost 100% on `price_momentum` (last month's trend). This suggests the egg market is highly "sticky"—prices tend to continue their current trajectory.
+* **News drives volatility (XGBoost):** The XGBoost model prioritized `flu_outbreak_count` (News Headlines) over biological supply data. This confirms the hypothesis that **market panic** (news cycles) drives volatility.
+
+### 3. Business Impact for the Inventory Strategist
+* **Base Case:** Use the Linear Model for standard monthly planning (expected error margin: $\pm$ $0.38).
+* **Risk Case:** Monitor the XGBoost "Panic Signal." If XGBoost predicts a sharp deviation from the Linear forecast, it indicates a **high-volatility event** driven by news sentiment, signaling a need to lock in prices early or hold inventory.
+* **Supply Chain Stability:** The strong momentum signal implies egg prices rarely swing without warning, enabling more confident forward‑buying strategies.
+* **Crisis Detection:** Flu‑related news spikes act as an early‑warning system for sudden price jumps, giving strategists a lead time advantage.
+* **Scenario Planning:** The dual‑model approach (steady‑state vs. volatility‑state) supports more resilient procurement strategies under both normal and stressed market conditions.
+* **Cost Optimization:** By identifying when volatility is not biologically driven, strategists can avoid overreacting to short‑term noise and reduce unnecessary hedging costs.
 
 ## What I Learned
 
