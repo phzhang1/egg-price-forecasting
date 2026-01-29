@@ -1,0 +1,35 @@
+date,model,residual
+68,Linear Regression Residuals,0.6124456634479962
+69,Linear Regression Residuals,-0.5694065915502987
+70,Linear Regression Residuals,0.3472486452558199
+71,Linear Regression Residuals,0.3170019895434768
+72,Linear Regression Residuals,0.45892290110794753
+73,Linear Regression Residuals,0.5043586191167386
+74,Linear Regression Residuals,-0.0873773272231742
+75,Linear Regression Residuals,-1.2588492640887377
+76,Linear Regression Residuals,-0.3851231539354702
+77,Linear Regression Residuals,-0.6609596780911481
+78,Linear Regression Residuals,-0.006178008545197955
+79,Linear Regression Residuals,0.04118421234370346
+80,Linear Regression Residuals,-0.0784202468984713
+81,Linear Regression Residuals,-0.03412979461556296
+82,Linear Regression Residuals,-0.7577958145573348
+83,Linear Regression Residuals,-0.2193493910686704
+84,Linear Regression Residuals,-0.1348597642276012
+68,XGBoost Residuals,0.4962809844017029
+69,XGBoost Residuals,-0.3000553498268128
+70,XGBoost Residuals,0.75475905919075
+71,XGBoost Residuals,0.2543994696140288
+72,XGBoost Residuals,0.7380919418931011
+73,XGBoost Residuals,0.708266550540924
+74,XGBoost Residuals,0.18502392053604133
+75,XGBoost Residuals,-1.230109434127808
+76,XGBoost Residuals,-0.09824094080924972
+77,XGBoost Residuals,-0.4622037987709047
+78,XGBoost Residuals,0.13479620122909575
+79,XGBoost Residuals,0.13395042169094085
+80,XGBoost Residuals,-0.21971901559829732
+81,XGBoost Residuals,-0.03971882537007332
+82,XGBoost Residuals,-0.8943662433624269
+83,XGBoost Residuals,0.017148988366127327
+84,XGBoost Residuals,-0.24645443260669708
