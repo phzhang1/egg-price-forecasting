@@ -1,7 +1,7 @@
-Feature,importance,model,feature
-,0.19654061395472752,Linear Regression,egg_diff_lag
-,0.0021838385084161638,Linear Regression,flu_panic_lag
-,0.0006393684602519381,Linear Regression,corn_diff_lag
-flu_panic_lag,0.5072992444038391,XGBoost,
-egg_diff_lag,0.2588399350643158,XGBoost,
-corn_diff_lag,0.2338608205318451,XGBoost,
+Feature,importance,model
+egg_diff_lag,0.9858389202434432,Linear Regression
+flu_panic_lag,0.0109540361852078,Linear Regression
+corn_diff_lag,0.003207043571348944,Linear Regression
+flu_panic_lag,0.5072992444038391,XGBoost
+egg_diff_lag,0.2588399350643158,XGBoost
+corn_diff_lag,0.2338608205318451,XGBoost
