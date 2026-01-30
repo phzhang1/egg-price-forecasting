@@ -159,8 +159,16 @@ The two models revealed a split in market behavior:
 
 ## What I Learned
 
-- *To be completed after project completion. This section will reflect on key lessons across data sourcing, time‑series feature engineering, model evaluation, and translating technical results into operational insights.*
+Working through this project taught me more than just forecasting. I built a debugging workflow using Python’s logging system, learned to pull and manage data from REST APIs, and dealt with the realities of messy, inconsistent datasets. Handling missing values forced me to understand how different imputation strategies affect time‑series integrity, especially the risks of backward fill and the importance of preserving causality with forward fill and lag features. I also deepened my understanding of temporal structure by transforming raw variables into stationary forms and engineering features that reflect real market behavior. On the visualization side, I became comfortable with Tableau’s dual‑axis charts, custom tick intervals, and layered mark types, which helped me communicate insights clearly and avoid misleading stakeholders. Altogether, these skills strengthened my ability to translate noisy real‑world data into forecasts that support practical, business‑driven decisions — especially for inventory planning under both stable and high‑volatility conditions.
 
 ## Next Steps/Future Work
 
-- *To be completed after initial deployment. This section will outline opportunities to expand the model, integrate additional data sources, improve feature engineering, and explore more advanced forecasting techniques.*
+There are several opportunities to extend this forecasting pipeline and deepen its ability to detect early warning signals in the egg market:
+
+- **Expand flu‑related features:** Incorporate active vs. inactive outbreak flags, outbreak durations, and severity progression to distinguish short‑term news spikes from sustained biological disruptions.
+
+- **Integrate USDA API data:** Pull supply, demand, and inventory indicators from USDA Market News and WASDE reports to ground the model in real production fundamentals.
+
+- **Develop a regime‑switching framework:** Formalize the “stable vs. volatile” market behavior observed in the results using Markov switching models or volatility classifiers.
+
+- **Incorporate broader environmental data sources:** Explore additional external drivers such as fuel prices, transportation costs, extreme weather events, and regional climate aonomalies.
